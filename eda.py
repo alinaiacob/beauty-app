@@ -3,7 +3,8 @@ from array import array
 import pandas as pd
 import numpy as np
 import streamlit as st
-from utils import sum_nan_values,histogramVariable
+from utils import sum_nan_values, histogramVariable, pieChartVariable, addOtherValueCol
+
 products_df = pd.read_csv("./dataset/product_info.csv")
 
 
@@ -46,8 +47,24 @@ print("null percentage\n ", null_percentage)
 
 
 st.text(f"Null percentage for variables {null_percentage}")
-histogramVariable(products_df, option)
+#histogramVariable(products_df, option)
 
 non_numeric_cols = products_df.select_dtypes(include=[object]).columns.tolist()
-for non_num_col in non_numeric_cols:
-    print(f"for col {non_num_col}",set(products_df[non_num_col].values.tolist()))
+print("non-numeric cols ", non_numeric_cols)
+# for non_num_col in non_numeric_cols:
+#     print(f"for col {non_num_col}",set(products_df[non_num_col].values.tolist()))
+
+st.text("Choose a categorical variable to have a look about dataset")
+option_non_numeric = st.selectbox(
+    "Choose a variable",
+    non_numeric_cols
+)
+
+#pieChartVariable(products_df, option_non_numeric)
+
+def addOtherValueCol(df, col):
+    elem = df[col].value_counts().sort_values(order=)
+    print(elem)
+
+
+addOtherValueCol(products_df, option_non_numeric)
