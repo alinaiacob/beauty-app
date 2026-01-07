@@ -60,11 +60,4 @@ option_non_numeric = st.selectbox(
     non_numeric_cols
 )
 
-#pieChartVariable(products_df, option_non_numeric)
-
-def addOtherValueCol(df, col):
-    elem = df[col].value_counts().sort_values(order=)
-    print(elem)
-
-
-addOtherValueCol(products_df, option_non_numeric)
+pieChartVariable(products_df, option_non_numeric)
