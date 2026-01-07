@@ -3,7 +3,7 @@ from array import array
 import pandas as pd
 import numpy as np
 import streamlit as st
-from utils import sum_nan_values, histogramVariable, pieChartVariable, addOtherValueCol
+from utils import sum_nan_values, histogramVariable, pieChartVariable, barChartVariable, getIngredients
 
 products_df = pd.read_csv("./dataset/product_info.csv")
 
@@ -38,6 +38,9 @@ option = st.selectbox(
 st.write("You select", option)
 st.write("Statistics for your option ", statistics[option])
 
+st.text(f"Bar chart for {option}")
+barChartVariable(products_df, option)
+
 
 sum_nan = sum_nan_values(products_df)
 print(sum_nan)
@@ -61,3 +64,9 @@ option_non_numeric = st.selectbox(
 )
 
 pieChartVariable(products_df, option_non_numeric)
+
+
+products_df = getIngredients(products_df)
+print(products_df["ingredients_list"])
+print(products_df['ingredients_list'])
+print(products_df['variants'])
