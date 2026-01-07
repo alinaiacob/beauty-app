@@ -6,7 +6,11 @@ from utils import sum_nan_values, histogramVariable, pieChartVariable, barChartV
 
 products_df = pd.read_csv("./dataset/product_info.csv")
 
-
+st.set_page_config(page_title="Beauty Reviewer app", layout="wide")
+menu = st.sidebar.radio(
+    "Navigation",
+    ["Homepage", "Products"]
+)
 
 num_prod = len(products_df['product_id'].unique())
 print("num prod", num_prod)
@@ -27,7 +31,7 @@ print("res for ", statistics["loves_count"])
 numeric_columns = statistics.columns.tolist()
 print("numeric cols", numeric_columns)
 st.title("Beauty Reviews Analyzer App")
-st.text(f"We analyzed {num_prod} products from {num_brands}. We aim ")
+st.text(f"We analyzed {num_prod} products from {num_brands} brands. We aim ")
 st.text(f"The columns used for this research {columns}")
 
 option = st.selectbox(

@@ -13,8 +13,12 @@ print("brand names ", brand_names)
 
 
 option = st.selectbox(
-    "Choose a product to analyze",
-    product_names
+    "Choose a brand name to analyze",
+    brand_names
 )
 st.write(f"You choose to analyze the {option}")
+products_from_brand = df[df["brand_name"]==option]
+products_names = products_from_brand["product_name"]
+print("product_names")
+st.write(f"All products from {option} ", products_names)
 
