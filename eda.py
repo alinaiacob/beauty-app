@@ -1,5 +1,4 @@
 from array import array
-
 import pandas as pd
 import numpy as np
 import streamlit as st
@@ -15,7 +14,7 @@ num_brands = len(products_df["brand_id"].unique())
 print("num brands", num_brands)
 print("num of products", products_df['product_id'].unique())
 #columns used for analysis
-products_df = products_df.drop(columns=['product_id','brand_id'])
+#products_df = products_df.drop(columns=['product_id','brand_id'])
 print("products_df after drop cols\n",products_df)
 columns = products_df.columns.tolist()
 print(columns)
@@ -66,7 +65,9 @@ option_non_numeric = st.selectbox(
 pieChartVariable(products_df, option_non_numeric)
 
 
-products_df = getIngredients(products_df)
+products_df, variants_risk = getIngredients(products_df)
 print(products_df["ingredients_list"])
 print(products_df['ingredients_list'])
 print(products_df['variants'])
+
+print("variant risk ",variants_risk[variants_risk["fragrance_count"] > 0])

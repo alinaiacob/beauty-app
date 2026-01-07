@@ -31,3 +31,9 @@ CONTROVERSIAL_FILTERS = {
     "avobenzone",
     "ethylhexyl salicylate"
 }
+RISK_WEIGHTS = {
+    "problematic_alcohol": 3,
+    "fragrance_allergen": 2,
+    "controversial_filter":1,
+    "ok":0
+}

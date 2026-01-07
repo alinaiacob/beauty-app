@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import streamlit as st
 import re
 import ast
+from problematic_ingredients import PROBLEMATIC_ALCOHOLS, FRAGRANCE_ALLERGENS, CONTROVERSIAL_FILTERS, RISK_WEIGHTS
 
 def sum_nan_values(df):
     return df.isna().sum()
@@ -92,9 +93,9 @@ def parse_ingredients(row):
 def getIngredients(df):
     df["ingredients_list"] = df["ingredients"].apply(parse_ingredients)
     df["variants"] = df["ingredients_list"].apply(expand_variants)
-    df = explode(df)
+    df, variants_risk = explode_variants(df)
     df["ingredient"] = df["ingredient"].apply(clean_ingredient)
-    return df
+    return df, variants_risk
 
 
 def clean_ingredient(ing):
@@ -104,18 +105,49 @@ def clean_ingredient(ing):
     return ing
 
 
-def explode(df):
-    # 1️⃣ explode variante
+def explode_variants(df):
     df_variants = df.explode("variants").dropna(subset=["variants"])
 
-    # 2️⃣ scoatem câmpurile din dict
     df_variants["variant_name"] = df_variants["variants"].apply(lambda x: x["variant_name"])
     df_variants["ingredient"] = df_variants["variants"].apply(lambda x: x["ingredients"])
 
-    # 3️⃣ explode ingrediente
     df_variants = df_variants.explode("ingredient").dropna(subset=["ingredient"])
 
-    return df_variants
+    df_variants["ingredient"] = df_variants["ingredient"].str.lower().str.strip()
+    df_variants["ingredient_class"] = df_variants["ingredient"].apply(classify_ingredient)
+    df_variants["ingredient_risk"] = df_variants["ingredient_class"].map(RISK_WEIGHTS).fillna(0)
+
+    variant_risk = (
+        df_variants
+        .groupby(["variant_name", "product_id"])
+        .agg(
+            total_ingredients=("ingredient", "count"),
+            risk_score=("ingredient_risk", "sum"),
+            fragrance_count=("ingredient_class", lambda x: (x=="fragrance_allergen").sum()),
+            alcohol_count=("ingredient_class", lambda x: (x=="problematic_alcohol").sum()),
+            filters_count=("ingredient_class", lambda x: (x=="controversial_filters").sum())
+        )
+        .reset_index()
+    )
+
+    variant_risk["risk_density"] = (
+        variant_risk["risk_score"] / variant_risk["total_ingredients"]
+    )
+
+    return df_variants, variant_risk
+
+
+
+def classify_ingredient(ingredient):
+     if ingredient in PROBLEMATIC_ALCOHOLS:
+         return "problematic_alcohol"
+     if ingredient in FRAGRANCE_ALLERGENS:
+         return "fragrance_allergen"
+     if ingredient in CONTROVERSIAL_FILTERS:
+         return "controversial_filters"
+
+     return "ok"
+
 
 
 
