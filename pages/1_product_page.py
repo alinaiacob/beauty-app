@@ -33,5 +33,5 @@ if product_name:
     st.session_state["selected_product"]  = product_name
     st.session_state["selected_brand"] = brand_name
 
-    st.succes("You have selected a product. Checkout the product details")
+    st.write("You have selected a product. Checkout the product details")
 
