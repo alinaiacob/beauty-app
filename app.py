@@ -2,9 +2,9 @@ from array import array
 import pandas as pd
 import numpy as np
 import streamlit as st
-from utils import sum_nan_values, histogramVariable, pieChartVariable, barChartVariable, getIngredients
+from utils import sum_nan_values, histogramVariable, pieChartVariable, barChartVariable, getIngredients, load_products_data
 
-products_df = pd.read_csv("./dataset/product_info.csv")
+products_df = load_products_data()
 
 st.set_page_config(page_title="Beauty Reviewer app", layout="wide")
 menu = st.sidebar.radio(

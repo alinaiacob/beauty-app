@@ -6,6 +6,11 @@ import re
 import ast
 from problematic_ingredients import PROBLEMATIC_ALCOHOLS, FRAGRANCE_ALLERGENS, CONTROVERSIAL_FILTERS, RISK_WEIGHTS
 
+
+
+def load_products_data():
+    df = pd.read_csv("./dataset/product_info.csv")
+    return df
 def sum_nan_values(df):
     return df.isna().sum()
 

@@ -1,8 +1,10 @@
 import pandas as pd
 import numpy as np
 import streamlit as st
+from st_aggrid import AgGrid, GridOptionsBuilder
+from utils import load_products_data
 
-df = pd.read_csv("./dataset/product_info.csv")
+df = load_products_data()
 
 st.title("Page for a single product")
 product_names = set(df['product_name'].tolist())
@@ -12,13 +14,24 @@ brand_names = set(df["brand_name"].tolist())
 print("brand names ", brand_names)
 
 
-option = st.selectbox(
+brand_name = st.selectbox(
     "Choose a brand name to analyze",
     brand_names
 )
-st.write(f"You choose to analyze the {option}")
-products_from_brand = df[df["brand_name"]==option]
+st.write(f"You choose to analyze the {brand_name}")
+
+products_from_brand = df[df["brand_name"]==brand_name]
 products_names = products_from_brand["product_name"]
-print("product_names")
-st.write(f"All products from {option} ", products_names)
+
+
+product_name = st.selectbox(
+    "Choose a product to analyze",
+    products_names
+)
+
+if product_name:
+    st.session_state["selected_product"]  = product_name
+    st.session_state["selected_brand"] = brand_name
+
+    st.succes("You have selected a product. Checkout the product details")
 
