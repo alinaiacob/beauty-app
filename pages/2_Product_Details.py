@@ -1,5 +1,6 @@
 import streamlit as st
-from utils import load_products_data, getStatisticsForProduct, getReviewsAboutProducts
+from utils.data_loader import load_products_data
+from utils.info_product import  getStatisticsForProduct, getReviewsAboutProducts
 
 st.title("Product Details Page")
 

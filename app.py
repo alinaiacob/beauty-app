@@ -2,7 +2,9 @@ from array import array
 import pandas as pd
 import numpy as np
 import streamlit as st
-from utils import sum_nan_values, histogramVariable, pieChartVariable, barChartVariable, getIngredients, load_products_data
+from utils.eda import sum_nan_values, histogramVariable, pieChartVariable, barChartVariable
+from utils.ingredients_processing import  getIngredients
+from utils.data_loader import load_products_data
 
 products_df = load_products_data()
 

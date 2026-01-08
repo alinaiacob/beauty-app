@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import streamlit as st
 from st_aggrid import AgGrid, GridOptionsBuilder
-from utils import load_products_data
+from utils.data_loader import load_products_data
 
 df = load_products_data()
 
