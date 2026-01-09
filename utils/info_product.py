@@ -1,8 +1,9 @@
 from utils.data_loader import load_products_data
-from utils.text_analysis import combineSentimentScoreReview
 import pandas as pd
 import matplotlib.pyplot as plt
 import streamlit as st
+import plotly.express as px
+from streamlit_plotly_events import plotly_events
 
 def getStatisticsForProduct(product_df):
     df = load_products_data()
@@ -29,8 +30,46 @@ def getReviewsAboutProducts(product_id):
     df = pd.concat(dfs, ignore_index=True)
     return df
 
-def chartPlotProduct(reviews):
-    all_reviews_scores_df = combineSentimentScoreReview()
-    plt.figure(figsize=(12, 6))
-    plt.title("Line chart for reviews and scores")
-    plt.xlabel(all_reviews_scores_df[""])
+
+def plotReviewsScore(plot_df):
+    fig = px.line(
+        plot_df,
+        x="submission_time",
+        y="polarity",
+        markers=True,
+        labels={
+            "submission_time":"Review date",
+            "polarity_score":"Sentiment polarity"
+        }
+    )
+
+    fig.update_traces(marker=dict(size=0))
+    fig.update_layout(
+        hovermode="closest",
+        yaxis=dict(range=[-1,1])
+    )
+
+    selected_points = plotly_events(
+        fig,
+        click_event=True,
+        hover_event=False,
+        select_event=False
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+    if selected_points:
+        idx = selected_points[0]["pointIndex"]
+        selected_review = plot_df.iloc[idx]
+
+        st.divider()
+        st.subheader("Selected review")
+        st.write(selected_review["review_text"])
+
+        score = selected_review['polarity_score']
+        if score > 0.5:
+            st.success("Positive sentiment")
+        elif score < -0.3:
+            st.error("Negative sentiment")
+        else:
+            st.info("Neutral/ mixed sentiment")
