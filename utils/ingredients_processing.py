@@ -1,7 +1,7 @@
 import pandas as pd
 import re
 import ast
-from problematic_ingredients import RISK_WEIGHTS
+from utils.problematic_ingredients import RISK_WEIGHTS
 
 def expand_variants(ingredients_list):
     result = []

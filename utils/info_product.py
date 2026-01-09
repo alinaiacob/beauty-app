@@ -1,5 +1,8 @@
-from data_loader import load_products_data
+from utils.data_loader import load_products_data
+from utils.text_analysis import combineSentimentScoreReview
 import pandas as pd
+import matplotlib.pyplot as plt
+import streamlit as st
 
 def getStatisticsForProduct(product_df):
     df = load_products_data()
@@ -25,3 +28,9 @@ def getReviewsAboutProducts(product_id):
 
     df = pd.concat(dfs, ignore_index=True)
     return df
+
+def chartPlotProduct(reviews):
+    all_reviews_scores_df = combineSentimentScoreReview()
+    plt.figure(figsize=(12, 6))
+    plt.title("Line chart for reviews and scores")
+    plt.xlabel(all_reviews_scores_df[""])
