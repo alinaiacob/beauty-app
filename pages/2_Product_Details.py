@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
 from utils.data_loader import load_products_data
-from utils.info_product import  getStatisticsForProduct, getReviewsAboutProducts
-from utils.text_analysis import analyze_sentiment, extract_keywords, combineSentimentScoreReview, add_sentiment_scores
+from utils.info_product import  getStatisticsForProduct, getReviewsAboutProducts, plotReviewsScore
+from utils.text_analysis import analyze_sentiment, extract_keywords, add_sentiment_scores
 
 st.title("Product Details Page")
 
@@ -34,7 +34,7 @@ st.write("Mean rating from other products from same category", mean_rating)
 product_id = product_df["product_id"].iloc[0]
 
 reviews_df = getReviewsAboutProducts(product_id)
-reviews_df["submission_time"] = pd.datetime(reviews_df["submission_time"])
+reviews_df["submission_time"] = pd.to_datetime(reviews_df["submission_time"])
 
 sentiment = analyze_sentiment(reviews_df["review_text"])
 st.write("Reviews for selected product ", reviews_df)
@@ -56,11 +56,11 @@ if keywords:
 result_df = add_sentiment_scores(reviews_df)
 
 plot_df = (
-    reviews_df
+    result_df
     .sort_values("submission_time")
     .reset_index(drop=True)
     [["submission_time","polarity_score","review_text"]]
 
 )
 
-
+plotReviewsScore(plot_df)
