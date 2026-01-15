@@ -32,7 +32,7 @@ def getReviewsAboutProducts(product_id):
 
 
 def plotReviewsScore(plot_df):
-    # 1️⃣ Scatter pentru reviews (CLICKABLE)
+
     fig = px.scatter(
         plot_df,
         x="submission_time",
@@ -46,7 +46,7 @@ def plotReviewsScore(plot_df):
 
     fig.update_traces(marker=dict(size=6))
 
-    # 2️⃣ Linie de smoothing (TREND)
+
     plot_df["polarity_smooth"] = plot_df["polarity_score"].rolling(10).mean()
 
     fig.add_scatter(
@@ -62,7 +62,7 @@ def plotReviewsScore(plot_df):
         yaxis=dict(range=[-1, 1])
     )
 
-    # 3️⃣ CLICK HANDLER — pe figura FINALĂ
+
     selected_points = plotly_events(
         fig,
         click_event=True,
@@ -72,7 +72,7 @@ def plotReviewsScore(plot_df):
 
     st.plotly_chart(fig, use_container_width=True)
 
-    # 4️⃣ Afișezi review-ul
+
     if selected_points:
         idx = selected_points[0]["pointIndex"]
         selected_review = plot_df.iloc[idx]

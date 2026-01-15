@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from utils.data_loader import load_products_data
 from utils.info_product import  getStatisticsForProduct, getReviewsAboutProducts, plotReviewsScore
-from utils.text_analysis import analyze_sentiment, extract_keywords, add_sentiment_scores
+from utils.text_analysis import analyze_sentiment, extract_keywords, add_sentiment_scores,topPositiveNegativeNgrams
 
 st.title("Product Details Page")
 
@@ -64,3 +64,10 @@ plot_df = (
 )
 
 plotReviewsScore(plot_df)
+
+
+topPositive, topNegative, topNgrams = topPositiveNegativeNgrams(result_df)
+
+st.write("Top positive words ", topPositive)
+st.write("Top negative words", topNegative)
+st.write("Top ngrams", topNgrams)
