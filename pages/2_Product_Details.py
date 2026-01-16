@@ -66,8 +66,8 @@ plot_df = (
 plotReviewsScore(plot_df)
 
 
-topPositive, topNegative, topNgrams = topPositiveNegativeNgrams(result_df)
+topPositive, topNegative = topPositiveNegativeNgrams(result_df)
 
 st.write("Top positive words ", topPositive)
 st.write("Top negative words", topNegative)
-st.write("Top ngrams", topNgrams)
+# st.write("Top ngrams", topNgrams)

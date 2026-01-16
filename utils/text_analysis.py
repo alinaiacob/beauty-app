@@ -8,6 +8,10 @@ from collections import Counter
 from sklearn.feature_extraction.text import CountVectorizer
 import numpy as np
 from sklearn.decomposition import LatentDirichletAllocation
+from sentence_transformers import SentenceTransformer
+from sklearn.decomposition import PCA
+from sklearn.cluster import KMeans
+import hdbscan
 
 nltk.download("vader_lexicon")
 nlp =spacy.load("en_core_web_sm", disable=["ner", "parser"])
@@ -74,25 +78,151 @@ def top_words(texts, n=20):
 
 
 def topPositiveNegativeNgrams(reviews_df):
-    reviews_df["clean_review"] = reviews_df["review_text"].apply(clean_text)
-    positive = reviews_df[reviews_df["polarity_score"] > 0.4]["clean_review"]
-    negative = reviews_df[reviews_df["polarity_score"] < -0.3]["clean_review"]
+        reviews_df["clean_review"] = reviews_df["review_text"].apply(clean_text)
 
-    top_pos = top_words(positive)
-    top_neg = top_words(negative)
+        positive = reviews_df[reviews_df["polarity_score"] > 0.4]["clean_review"]
+        negative = reviews_df[reviews_df["polarity_score"] < -0.3]["clean_review"]
 
-    vectorizer = CountVectorizer(
-        ngram_range=(2, 3),
-        min_df=5
+        pos_phrases = []
+        for text in positive:
+            pos_phrases.extend(extract_opinion_phrases(text))
+
+        neg_phrases = []
+        for text in negative:
+            neg_phrases.extend(extract_opinion_phrases(text))
+
+        top_pos = Counter(pos_phrases).most_common(20)
+        top_neg = Counter(neg_phrases).most_common(20)
+
+        return top_pos, top_neg
+
+
+def extract_opinion_phrases(text):
+    doc = nlp(text)
+    phrases = []
+
+    for token in doc:
+        if token.pos_ == "ADJ":
+            phrases.append(token.lemma_)
+
+        if token.pos_ == "ADJ" and token.head.pos_ == "NOUN":
+            phrases.append(f"{token.lemma_} {token.head.lemma_}")
+
+        if token.pos_ == "VERB":
+            for child in token.children:
+                if child.pos_ == "ADJ":
+                    phrases.append(f"{token.lemma_} {child.lemma_}")
+
+    return phrases
+
+ASPECTS = {
+    "fragrance": [
+        "smell", "scent", "fragrance", "perfume", "odor"
+    ],
+    "texture": [
+        "texture", "greasy", "oily", "thick", "light",
+        "sticky", "smooth", "silky"
+    ],
+    "irritation": [
+        "irritation", "burn", "burning", "sting",
+        "redness", "rash", "itch", "breakout"
+    ],
+    "hydration": [
+        "dry", "hydrating", "moisturizing", "moisture",
+        "dehydrated"
+    ],
+    "price": [
+        "price", "expensive", "cheap", "worth", "value"
+    ],
+    "performance": [
+        "remove", "cleans", "works", "effective",
+        "cleansing"
+    ]
+}
+
+import nltk
+nltk.download("punkt")
+
+from nltk.tokenize import sent_tokenize
+
+def extract_aspect_sentences(review):
+    sentences = sent_tokenize(review.lower())
+    aspect_sentences = []
+
+    for sent in sentences:
+        for aspect, keywords in ASPECTS.items():
+            if any(k in sent for k in keywords):
+                aspect_sentences.append({
+                    "aspect":aspect,
+                    "sentence":sent
+                })
+    return aspect_sentences
+
+def score_sentence(sentence):
+    return sia.polarity_scores(sentence)["compound"]
+
+def aspect_based_sentiment(reviews_df):
+    rows = []
+    for _, row in reviews_df.iterrows():
+        aspects = extract_aspect_sentences(row["review_text"])
+
+        for item in aspects:
+            score = score_sentence(item["sentence"])
+            rows.append({
+                "product_id": row["product_id"],
+                "review_id":row.get("review_id"),
+                "aspect": item["aspect"],
+                "sentence":item["sentence"],
+                "sentiment_score": score
+            })
+        return pd.DataFrame(rows)
+
+def aggregate_aspects(absa_df):
+    return (
+        absa_df
+        .groupby(["product_id"],"aspect")
+        .agg(
+            avg_sentiment = ("sentiment_score", "mean"),
+            mentions=("sentiment_score", "count")
+
+        )
+        .reset_index()
+        .sort_values("avg_sentiment")
     )
 
-    X = vectorizer.fit_transform(reviews_df["clean_review"])
-    ngrams = vectorizer.get_feature_names_out()
+def clean_review_for_cluster(text):
+    if not text:
+        return ""
+    text = text.lower()
+    text = re.sub(r"http\S+", "",text)
+    text = re.sub(r"[^a-z\s]", "", text)
+    return text.strip()
 
-    sentiment_corr = np.asarray(X.T.dot(reviews_df["polarity_score"]))
-    top_ngrams = sorted(
-        zip(ngrams, sentiment_corr),
-        key=lambda x: x[1],
-        reverse=True
-    )[:20]
-    return top_pos, top_neg, top_ngrams
+#sentence transformers
+def cluster(reviews_df):
+ model = SentenceTransformer("all-MiniLM-L6-v2")
+ reviews_df["cluster_text"] = reviews_df["review_text"].apply(clean_review_for_cluster)
+ embeddings = model.encode(
+    reviews_df["cluster_text"].tolist(),
+     show_progress_bar=True
+)
+
+ pca = PCA(n_components=20, random_state=42)
+ X_reduced = pca.fit_transform(embeddings)
+ kmeans = KMeans(n_clusters=5, random_state=42)
+ clusters = kmeans.fit_predict(X_reduced)
+ reviews_df["cluster"] = clusters
+
+
+ clusterer_db = hdbscan.HDBSCAN(
+     min_cluster_size=30,
+     metric="euclidean"
+ )
+ clusters_db = clusterer_db.fit_predict(X_reduced)
+ reviews_df["cluster_db"] = clusters_db
+ return reviews_df
+
+
+
+
+
